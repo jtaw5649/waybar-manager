@@ -1,7 +1,6 @@
 <p align="center">
   <img src="assets/icons/hicolor/scalable/apps/org.waybar.ExtensionManager.svg" width="128" height="128" alt="Waybar Extension Manager">
 </p>
-
 <h1 align="center">Waybar Extension Manager</h1>
 
 <p align="center">
