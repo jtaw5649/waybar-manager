@@ -363,11 +363,15 @@ async fn fetch_registry_async() -> Result<RegistryIndex, String> {
         }
     };
 
-    if let Some(parent) = cache_path.parent() {
-        let _ = tokio::fs::create_dir_all(parent).await;
+    if let Some(parent) = cache_path.parent()
+        && let Err(e) = tokio::fs::create_dir_all(parent).await
+    {
+        tracing::warn!("Failed to create cache directory: {e}");
     }
-    if let Ok(content) = serde_json::to_string_pretty(&index) {
-        let _ = tokio::fs::write(&cache_path, content).await;
+    if let Ok(content) = serde_json::to_string_pretty(&index)
+        && let Err(e) = tokio::fs::write(&cache_path, content).await
+    {
+        tracing::warn!("Failed to write registry cache: {e}");
     }
 
     tracing::info!("Fetched {} modules from registry", index.modules.len());
@@ -376,7 +380,9 @@ async fn fetch_registry_async() -> Result<RegistryIndex, String> {
 
 async fn refresh_registry_async() -> Result<RegistryIndex, String> {
     let cache_path = paths::registry_cache_path();
-    let _ = tokio::fs::remove_file(&cache_path).await;
+    if let Err(e) = tokio::fs::remove_file(&cache_path).await {
+        tracing::debug!("Cache file removal skipped: {e}");
+    }
 
     tracing::info!("Force refreshing registry from {}", REGISTRY_URL);
     let response = HTTP_CLIENT
@@ -390,11 +396,15 @@ async fn refresh_registry_async() -> Result<RegistryIndex, String> {
         .await
         .map_err(|e| format!("Parse error: {e}"))?;
 
-    if let Some(parent) = cache_path.parent() {
-        let _ = tokio::fs::create_dir_all(parent).await;
+    if let Some(parent) = cache_path.parent()
+        && let Err(e) = tokio::fs::create_dir_all(parent).await
+    {
+        tracing::warn!("Failed to create cache directory: {e}");
     }
-    if let Ok(content) = serde_json::to_string_pretty(&index) {
-        let _ = tokio::fs::write(&cache_path, content).await;
+    if let Ok(content) = serde_json::to_string_pretty(&index)
+        && let Err(e) = tokio::fs::write(&cache_path, content).await
+    {
+        tracing::warn!("Failed to write registry cache: {e}");
     }
 
     tracing::info!("Refreshed registry: {} modules", index.modules.len());
@@ -610,10 +620,14 @@ async fn toggle_module_async(uuid: String, enabled: bool) -> Result<String, (Str
         };
 
         if let Ok(new_waybar_content) = modified {
-            let _ = waybar_config::backup_config().await;
+            if let Err(e) = waybar_config::backup_config().await {
+                tracing::warn!("Failed to backup waybar config: {e}");
+            }
 
-            if waybar_config::save_config(&new_waybar_content).await.is_ok() {
-                let _ = waybar_config::reload_waybar().await;
+            if waybar_config::save_config(&new_waybar_content).await.is_ok()
+                && let Err(e) = waybar_config::reload_waybar().await
+            {
+                tracing::warn!("Failed to reload waybar: {e}");
             }
         }
     }
@@ -710,10 +724,14 @@ async fn change_module_position_async(
             .and_then(|content| waybar_config::add_module(&content, &waybar_module_name, new_section));
 
         if let Ok(new_waybar_content) = modified {
-            let _ = waybar_config::backup_config().await;
+            if let Err(e) = waybar_config::backup_config().await {
+                tracing::warn!("Failed to backup waybar config: {e}");
+            }
 
-            if waybar_config::save_config(&new_waybar_content).await.is_ok() {
-                let _ = waybar_config::reload_waybar().await;
+            if waybar_config::save_config(&new_waybar_content).await.is_ok()
+                && let Err(e) = waybar_config::reload_waybar().await
+            {
+                tracing::warn!("Failed to reload waybar: {e}");
             }
         }
     }
@@ -801,10 +819,14 @@ async fn load_screenshot_async(url: String) -> Result<image::Handle, String> {
         .await
         .map_err(|e| format!("Failed to read screenshot bytes: {e}"))?;
 
-    if let Some(parent) = cache_path.parent() {
-        let _ = tokio::fs::create_dir_all(parent).await;
+    if let Some(parent) = cache_path.parent()
+        && let Err(e) = tokio::fs::create_dir_all(parent).await
+    {
+        tracing::debug!("Failed to create screenshot cache directory: {e}");
     }
-    let _ = tokio::fs::write(&cache_path, &bytes).await;
+    if let Err(e) = tokio::fs::write(&cache_path, &bytes).await {
+        tracing::debug!("Failed to cache screenshot: {e}");
+    }
 
     Ok(image::Handle::from_bytes(bytes.to_vec()))
 }
