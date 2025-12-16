@@ -102,9 +102,93 @@ pub fn remove_module(content: &str, module_name: &str) -> Result<String, String>
         .map_err(|e| format!("Failed to serialize config: {e}"))
 }
 
+pub fn merge_module_config(
+    waybar_content: &str,
+    module_content: &str,
+    install_path: &str,
+) -> Result<String, String> {
+    let module_content = module_content.replace("$MODULE_PATH", install_path);
+
+    let waybar_value: serde_json::Value =
+        jsonc_parser::parse_to_serde_value(waybar_content, &Default::default())
+            .map_err(|e| format!("Failed to parse waybar config: {e}"))?
+            .ok_or("Empty waybar config")?;
+
+    let module_value: serde_json::Value =
+        jsonc_parser::parse_to_serde_value(&module_content, &Default::default())
+            .map_err(|e| format!("Failed to parse module config: {e}"))?
+            .ok_or("Empty module config")?;
+
+    let mut waybar_obj = match waybar_value {
+        serde_json::Value::Object(obj) => obj,
+        _ => return Err("Waybar config is not a JSON object".to_string()),
+    };
+
+    let module_obj = match module_value {
+        serde_json::Value::Object(obj) => obj,
+        _ => return Err("Module config is not a JSON object".to_string()),
+    };
+
+    for (key, value) in module_obj {
+        waybar_obj.insert(key, value);
+    }
+
+    serde_json::to_string_pretty(&serde_json::Value::Object(waybar_obj))
+        .map_err(|e| format!("Failed to serialize config: {e}"))
+}
+
+pub fn inject_module_css(existing_css: &str, uuid: &str, module_css: &str) -> String {
+    format!(
+        "{}\n/* BEGIN waybar-manager:{} */\n{}\n/* END waybar-manager:{} */",
+        existing_css.trim_end(),
+        uuid,
+        module_css.trim(),
+        uuid
+    )
+}
+
+pub fn remove_module_css(css_content: &str, uuid: &str) -> String {
+    let begin_marker = format!("/* BEGIN waybar-manager:{} */", uuid);
+    let end_marker = format!("/* END waybar-manager:{} */", uuid);
+
+    let Some(begin_pos) = css_content.find(&begin_marker) else {
+        return css_content.to_string();
+    };
+
+    let Some(end_pos) = css_content.find(&end_marker) else {
+        return css_content.to_string();
+    };
+
+    let before = css_content[..begin_pos].trim_end();
+    let after = css_content[end_pos + end_marker.len()..].trim_start();
+
+    if after.is_empty() {
+        before.to_string()
+    } else {
+        format!("{}\n{}", before, after)
+    }
+}
+
+pub fn remove_module_config(waybar_content: &str, module_name: &str) -> Result<String, String> {
+    let waybar_value: serde_json::Value =
+        jsonc_parser::parse_to_serde_value(waybar_content, &Default::default())
+            .map_err(|e| format!("Failed to parse waybar config: {e}"))?
+            .ok_or("Empty waybar config")?;
+
+    let mut waybar_obj = match waybar_value {
+        serde_json::Value::Object(obj) => obj,
+        _ => return Err("Waybar config is not a JSON object".to_string()),
+    };
+
+    waybar_obj.remove(module_name);
+
+    serde_json::to_string_pretty(&serde_json::Value::Object(waybar_obj))
+        .map_err(|e| format!("Failed to serialize config: {e}"))
+}
+
 pub async fn reload_waybar() -> Result<(), String> {
     let status = tokio::process::Command::new("pkill")
-        .args(["-SIGUSR2", "waybar"])
+        .args(["-x", "-SIGUSR2", "waybar"])
         .status()
         .await
         .map_err(|e| format!("Failed to send reload signal: {e}"))?;
@@ -205,5 +289,79 @@ mod tests {
 
         let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
         assert!(parsed["modules-left"].is_array());
+    }
+
+    #[test]
+    fn test_merge_module_config_adds_definition() {
+        let waybar = r#"{"layer": "top", "modules-center": ["clock"]}"#;
+        let module = r#"{"custom/weather": {"exec": "curl wttr.in", "interval": 600}}"#;
+
+        let result = merge_module_config(waybar, module, "/path/to/module").unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+
+        assert!(parsed["custom/weather"].is_object());
+        assert_eq!(parsed["custom/weather"]["interval"], 600);
+    }
+
+    #[test]
+    fn test_merge_module_config_replaces_module_path() {
+        let waybar = r#"{"layer": "top"}"#;
+        let module = r#"{"custom/script": {"exec": "$MODULE_PATH/script.sh"}}"#;
+
+        let result = merge_module_config(waybar, module, "/home/user/.local/share/waybar-manager/modules/test@ns").unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+
+        assert_eq!(
+            parsed["custom/script"]["exec"],
+            "/home/user/.local/share/waybar-manager/modules/test@ns/script.sh"
+        );
+    }
+
+    #[test]
+    fn test_remove_module_config_strips_definition() {
+        let waybar = r#"{"layer": "top", "custom/weather": {"exec": "curl"}, "clock": {}}"#;
+
+        let result = remove_module_config(waybar, "custom/weather").unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
+
+        assert!(parsed.get("custom/weather").is_none());
+        assert!(parsed.get("clock").is_some());
+        assert!(parsed.get("layer").is_some());
+    }
+
+    #[test]
+    fn test_inject_module_css_appends_with_markers() {
+        let existing = "* { font-family: monospace; }";
+        let module_css = ".custom-weather { color: #fff; }";
+
+        let result = inject_module_css(existing, "weather@test", module_css);
+
+        assert!(result.contains("/* BEGIN waybar-manager:weather@test */"));
+        assert!(result.contains(".custom-weather { color: #fff; }"));
+        assert!(result.contains("/* END waybar-manager:weather@test */"));
+        assert!(result.starts_with("* { font-family: monospace; }"));
+    }
+
+    #[test]
+    fn test_remove_module_css_strips_marked_section() {
+        let css = r#"* { font-family: monospace; }
+/* BEGIN waybar-manager:weather@test */
+.custom-weather { color: #fff; }
+/* END waybar-manager:weather@test */
+.clock { color: blue; }"#;
+
+        let result = remove_module_css(css, "weather@test");
+
+        assert!(!result.contains("waybar-manager:weather@test"));
+        assert!(!result.contains(".custom-weather"));
+        assert!(result.contains("* { font-family: monospace; }"));
+        assert!(result.contains(".clock { color: blue; }"));
+    }
+
+    #[test]
+    fn test_remove_module_css_handles_missing_section() {
+        let css = "* { font-family: monospace; }";
+        let result = remove_module_css(css, "nonexistent@test");
+        assert_eq!(result, css);
     }
 }
