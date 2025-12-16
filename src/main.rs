@@ -1,15 +1,13 @@
-use gtk::prelude::*;
 use std::io::IsTerminal;
-use tracing::info;
-use tracing_subscriber::{EnvFilter, fmt, prelude::*};
+use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 fn setup_tracing() {
     let is_terminal = std::io::stderr().is_terminal();
 
     let default_filter = if is_terminal {
-        "waybar_manager=debug,gtk=warn,gdk=warn,glib=warn"
+        "waybar_manager=debug"
     } else {
-        "waybar_manager=info,gtk=warn,gdk=warn,glib=warn"
+        "waybar_manager=info"
     };
 
     let env_filter =
@@ -46,50 +44,28 @@ fn setup_panic_handler() {
         } else {
             msg.push_str("unknown panic");
         }
-        let _ = writeln!(std::io::stderr(), "{}", msg);
+        let _ = writeln!(std::io::stderr(), "{msg}");
     }));
 }
 
-fn setup_signal_handlers() {
-    use glib::ControlFlow;
-
-    for sig in [libc::SIGTERM, libc::SIGINT, libc::SIGHUP] {
-        glib::unix_signal_add_local(sig, move || {
-            info!("received signal {}", sig);
-            ControlFlow::Continue
-        });
-    }
-}
-
-fn ignore_rt_signals() {
-    unsafe {
-        for sig in [41, 42, 43, 44, 45, 46, 47, 48, 49, 50] {
-            libc::signal(sig, libc::SIG_IGN);
-        }
-    }
-}
-
-fn main() -> glib::ExitCode {
+fn main() -> iced::Result {
     setup_tracing();
     setup_panic_handler();
-    ignore_rt_signals();
 
-    info!(
-        "Waybar Extension Manager v{} starting (PID {})",
+    tracing::info!(
+        "Waybar Manager v{} starting (PID {})",
         env!("CARGO_PKG_VERSION"),
         std::process::id()
     );
 
-    if std::env::var("GSK_RENDERER").is_err() {
-        unsafe { std::env::set_var("GSK_RENDERER", "gl") };
-    }
-
-    let app = waybar_manager::Application::new();
-
-    setup_signal_handlers();
-
-    let exit_code = app.run();
-
-    info!("exiting with code {:?}", exit_code);
-    exit_code
+    iced::application(
+        waybar_manager::app::App::new,
+        waybar_manager::app::App::update,
+        waybar_manager::app::App::view,
+    )
+    .title("Waybar Manager")
+    .theme(waybar_manager::app::App::theme)
+    .subscription(waybar_manager::app::App::subscription)
+    .window_size((1200.0, 800.0))
+    .run()
 }

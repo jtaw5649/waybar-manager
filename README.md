@@ -4,7 +4,7 @@
 <h1 align="center">Waybar Extension Manager</h1>
 
 <p align="center">
-  <b>A native GTK4 extension manager for Waybar — browse, install, and manage modules from a central registry.</b>
+  <b>An iced extension manager for Waybar — browse, install, and manage modules from a central registry.</b>
 </p>
 
 <p align="center">
@@ -16,7 +16,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Rust-1.75%2B-orange?style=flat-square&logo=rust" alt="Rust">
-  <img src="https://img.shields.io/badge/GTK-4.12%2B-green?style=flat-square&logo=gtk" alt="GTK4">
+  <img src="https://img.shields.io/badge/iced-0.14-blue?style=flat-square" alt="iced">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License">
 </p>
 
@@ -34,7 +34,7 @@
 
 🔄 **Update Notifications** — Know when your installed modules have updates available
 
-🎯 **Native Experience** — Built with libadwaita for seamless desktop integration
+🎯 **Cross-Platform** — Built with iced for a fast, native experience on any platform
 
 ## Installation
 
@@ -50,7 +50,11 @@ cargo build --release
 ### Dependencies
 
 ```bash
-sudo pacman -S gtk4 libadwaita rust
+# Arch Linux
+sudo pacman -S rust
+
+# Other platforms: Install Rust via rustup
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 ## Module Format
@@ -116,17 +120,17 @@ cargo clippy
 
 ```
 src/
-├── application.rs       # Adw.Application lifecycle
-├── window.rs            # NavigationSplitView main window
+├── main.rs              # Application entry point
+├── app/                 # Elm architecture (state, message, update, view)
 ├── domain/              # ModuleUuid, RegistryModule, InstalledModule
 ├── services/            # Registry fetch, module management
-└── ui/
-    ├── pages/           # BrowsePage, InstalledPage
-    └── widgets/         # ModuleCard
+├── tasks.rs             # Async Task operations
+├── theme/               # Custom theming (colors, styles)
+└── widget/              # Reusable UI components (sidebar, cards, rows)
 ```
 
 ## Credits
 
-Built with [gtk4-rs](https://github.com/gtk-rs/gtk4-rs) and [libadwaita](https://gitlab.gnome.org/GNOME/libadwaita).
+Built with [iced](https://github.com/iced-rs/iced) and [iced_aw](https://github.com/iced-rs/iced_aw).
 
 Inspired by [GNOME Extensions](https://extensions.gnome.org), [Waybar](https://github.com/Alexays/Waybar), and the Wayland ecosystem.
