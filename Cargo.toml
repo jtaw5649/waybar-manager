@@ -40,6 +40,7 @@ dirs = "6"
 chrono = { version = "0.4", features = ["serde"] }
 semver = { version = "1", features = ["serde"] }
 open = "5"
+url = "2"
 
 # System tray (D-Bus StatusNotifierItem)
 ksni = { version = "0.3.2", features = ["blocking"] }
