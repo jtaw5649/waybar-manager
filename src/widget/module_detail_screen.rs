@@ -7,9 +7,10 @@ use crate::app::state::ScreenshotState;
 use crate::domain::RegistryModule;
 use crate::icons::Icon;
 use crate::theme::{
-    button as btn_style, container as cont_style, AppTheme, FONT_2XL, FONT_LG, FONT_MD, FONT_SM,
-    FONT_XS, ICON_MD, ICON_SM, RADIUS_MD, RADIUS_SM, SPACE_LG, SPACE_MD, SPACE_SM, SPACE_XL,
-    SPACE_XS,
+    button as btn_style, container as cont_style, AppTheme, DETAIL_CONTENT_MAX_WIDTH, FONT_2XL,
+    FONT_LG, FONT_MD, FONT_SM, FONT_XS, ICON_MD, ICON_SM, RADIUS_MD, RADIUS_SM,
+    SCREENSHOT_FAILED_HEIGHT, SCREENSHOT_LOADING_HEIGHT, SCREENSHOT_MAX_HEIGHT, SPACE_LG, SPACE_MD,
+    SPACE_SM, SPACE_XL, SPACE_XS,
 };
 
 use super::category_style;
@@ -195,7 +196,7 @@ pub fn module_detail_screen<'a>(
             .align_x(Alignment::Center),
         )
         .width(Length::Fill)
-        .height(Length::Fixed(200.0))
+        .height(Length::Fixed(SCREENSHOT_LOADING_HEIGHT))
         .center(Length::Fill)
         .style(move |_: &iced::Theme| iced::widget::container::Style {
             background: Some(Background::Color(theme_copy.bg_elevated)),
@@ -213,7 +214,7 @@ pub fn module_detail_screen<'a>(
                 .content_fit(iced::ContentFit::Contain),
         )
         .width(Length::Fill)
-        .max_height(400.0)
+        .max_height(SCREENSHOT_MAX_HEIGHT)
         .style(move |_: &iced::Theme| iced::widget::container::Style {
             background: Some(Background::Color(theme_copy.bg_elevated)),
             border: Border {
@@ -235,7 +236,7 @@ pub fn module_detail_screen<'a>(
             .align_x(Alignment::Center),
         )
         .width(Length::Fill)
-        .height(Length::Fixed(120.0))
+        .height(Length::Fixed(SCREENSHOT_FAILED_HEIGHT))
         .center(Length::Fill)
         .style(move |_: &iced::Theme| iced::widget::container::Style {
             background: Some(Background::Color(theme_copy.bg_elevated)),
@@ -341,7 +342,7 @@ pub fn module_detail_screen<'a>(
         links_section,
     ]
     .padding(SPACE_XL)
-    .max_width(800.0);
+    .max_width(DETAIL_CONTENT_MAX_WIDTH);
 
     scrollable(
         container(content)

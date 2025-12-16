@@ -5,8 +5,8 @@ use crate::app::message::Message;
 use crate::services::{ModulePreferences, PreferenceField, PreferenceValue, PreferencesSchema, SelectOption};
 use crate::theme::{
     button as btn_style, menu_style, pick_list_style, AppTheme, PickListColors, FONT_LG, FONT_MD,
-    FONT_SM, FONT_XS, RADIUS_LG, RADIUS_MD, RADIUS_SM, SPACE_LG, SPACE_MD, SPACE_SM, SPACE_XL,
-    SPACE_XS,
+    FONT_SM, FONT_XS, NUMBER_INPUT_WIDTH, PREFERENCES_MODAL_MAX_HEIGHT, PREFERENCES_MODAL_WIDTH,
+    RADIUS_LG, RADIUS_MD, RADIUS_SM, SPACE_LG, SPACE_MD, SPACE_SM, SPACE_XL, SPACE_XS,
 };
 
 pub fn preferences_modal<'a>(
@@ -77,8 +77,8 @@ pub fn preferences_modal<'a>(
 
     let modal = container(modal_content)
         .padding(SPACE_XL)
-        .width(Length::Fixed(500.0))
-        .max_height(600.0)
+        .width(Length::Fixed(PREFERENCES_MODAL_WIDTH))
+        .max_height(PREFERENCES_MODAL_MAX_HEIGHT)
         .style(move |_: &iced::Theme| iced::widget::container::Style {
             background: Some(Background::Color(theme_copy.bg_surface)),
             border: Border {
@@ -323,7 +323,7 @@ fn render_field<'a>(
                     )
                 })
                 .padding(SPACE_SM)
-                .width(Length::Fixed(120.0))
+                .width(Length::Fixed(NUMBER_INPUT_WIDTH))
                 .style(move |_, status| {
                     let border_color = match status {
                         iced::widget::text_input::Status::Focused { .. } => theme_copy.primary,

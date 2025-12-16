@@ -4,8 +4,8 @@ use iced::{Alignment, Background, Border, Element, Length};
 use crate::app::message::Message;
 use crate::app::state::ConfirmationAction;
 use crate::theme::{
-    button as button_style, shadow_lg, AppTheme, FONT_MD, FONT_SM, RADIUS_LG, SPACE_LG, SPACE_MD,
-    SPACE_SM,
+    button as button_style, shadow_lg, AppTheme, CONFIRMATION_DIALOG_WIDTH, FONT_MD, FONT_SM,
+    RADIUS_LG, SPACE_LG, SPACE_MD, SPACE_SM,
 };
 
 pub fn confirmation_dialog(action: &ConfirmationAction, theme: &AppTheme) -> Element<'static, Message> {
@@ -40,7 +40,7 @@ pub fn confirmation_dialog(action: &ConfirmationAction, theme: &AppTheme) -> Ele
     ]
     .spacing(SPACE_SM)
     .align_x(Alignment::Center)
-    .width(Length::Fixed(350.0));
+    .width(Length::Fixed(CONFIRMATION_DIALOG_WIDTH));
 
     let dialog = container(dialog_content)
         .padding(SPACE_LG)

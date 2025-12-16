@@ -3,8 +3,8 @@ use iced::{Background, Border, Color, Element, Length, Radians};
 
 use crate::app::message::Message;
 use crate::theme::{
-    shadow_sm, AppTheme, FONT_MD, FONT_SM, FONT_XS, RADIUS_MD, RADIUS_SM, SPACE_MD, SPACE_SM,
-    SPACE_XS,
+    shadow_sm, AppTheme, FONT_MD, FONT_SM, FONT_XS, RADIUS_MD, RADIUS_SM, SKELETON_BAR_MD,
+    SKELETON_BAR_SM, SPACE_MD, SPACE_SM, SPACE_XS,
 };
 
 fn shimmer_gradient(base_color: Color, shimmer_phase: f32) -> Background {
@@ -70,9 +70,9 @@ pub fn skeleton_card(theme: &AppTheme, width: f32, shimmer_frame: usize) -> Elem
     .width(Length::Fill);
 
     let footer = row![
-        skeleton_bar(Length::Fixed(60.0), FONT_XS + 4.0, theme, shimmer_phase),
+        skeleton_bar(Length::Fixed(SKELETON_BAR_MD), FONT_XS + 4.0, theme, shimmer_phase),
         Space::new().width(Length::Fill),
-        skeleton_bar(Length::Fixed(40.0), FONT_XS, theme, shimmer_phase),
+        skeleton_bar(Length::Fixed(SKELETON_BAR_SM), FONT_XS, theme, shimmer_phase),
     ]
     .align_y(iced::Alignment::Center);
 
