@@ -80,6 +80,7 @@ async fn install_module_async(
         .map_err(|e| format!("Failed to create install directory: {e}"))?;
 
     download_module_files(&repo_url, &install_path).await?;
+    make_scripts_executable(&install_path).await?;
 
     let has_preferences = install_path.join("preferences.schema.json").exists();
 
@@ -531,6 +532,7 @@ async fn toggle_module_async(uuid: String, enabled: bool) -> Result<String, (Str
         .ok_or_else(|| (uuid.clone(), format!("Module not found: {uuid}")))?;
 
     let waybar_module_name = module.waybar_module_name.clone();
+    let install_path = module.install_path.clone();
     let section = module
         .position
         .as_ref()
@@ -548,9 +550,29 @@ async fn toggle_module_async(uuid: String, enabled: bool) -> Result<String, (Str
 
     if let Ok(waybar_content) = waybar_config::load_config().await {
         let modified = if enabled {
-            waybar_config::add_module(&waybar_content, &waybar_module_name, section)
+            let config_path = install_path.join("config.jsonc");
+            let with_module_config = if config_path.exists() {
+                if let Ok(module_config) = tokio::fs::read_to_string(&config_path).await {
+                    let install_path_str = install_path.to_string_lossy();
+                    waybar_config::merge_module_config(&waybar_content, &module_config, &install_path_str)
+                        .unwrap_or_else(|e| {
+                            tracing::warn!("Failed to merge module config: {e}");
+                            waybar_content.clone()
+                        })
+                } else {
+                    waybar_content.clone()
+                }
+            } else {
+                waybar_content.clone()
+            };
+            waybar_config::add_module(&with_module_config, &waybar_module_name, section)
         } else {
-            waybar_config::remove_module(&waybar_content, &waybar_module_name)
+            let without_config = waybar_config::remove_module_config(&waybar_content, &waybar_module_name)
+                .unwrap_or_else(|e| {
+                    tracing::warn!("Failed to remove module config: {e}");
+                    waybar_content.clone()
+                });
+            waybar_config::remove_module(&without_config, &waybar_module_name)
         };
 
         if let Ok(new_waybar_content) = modified {
@@ -562,8 +584,53 @@ async fn toggle_module_async(uuid: String, enabled: bool) -> Result<String, (Str
         }
     }
 
+    if enabled {
+        handle_css_injection(&uuid, &install_path).await;
+    } else {
+        handle_css_removal(&uuid).await;
+    }
+
     tracing::info!("Module {} {}", uuid, if enabled { "enabled" } else { "disabled" });
     Ok(uuid)
+}
+
+async fn handle_css_injection(uuid: &str, install_path: &Path) {
+    use crate::services::waybar_config;
+
+    let css_path = install_path.join("style.css");
+    if !css_path.exists() {
+        return;
+    }
+
+    let Ok(module_css) = tokio::fs::read_to_string(&css_path).await else {
+        return;
+    };
+
+    let waybar_style_path = paths::waybar_style_path();
+    let existing_css = tokio::fs::read_to_string(&waybar_style_path)
+        .await
+        .unwrap_or_default();
+
+    let new_css = waybar_config::inject_module_css(&existing_css, uuid, &module_css);
+
+    if let Err(e) = tokio::fs::write(&waybar_style_path, new_css).await {
+        tracing::warn!("Failed to inject CSS: {e}");
+    }
+}
+
+async fn handle_css_removal(uuid: &str) {
+    use crate::services::waybar_config;
+
+    let waybar_style_path = paths::waybar_style_path();
+    let Ok(existing_css) = tokio::fs::read_to_string(&waybar_style_path).await else {
+        return;
+    };
+
+    let new_css = waybar_config::remove_module_css(&existing_css, uuid);
+
+    if let Err(e) = tokio::fs::write(&waybar_style_path, new_css).await {
+        tracing::warn!("Failed to remove CSS: {e}");
+    }
 }
 
 async fn change_module_position_async(
@@ -823,4 +890,66 @@ async fn reset_settings_async() -> Result<(), String> {
 
     tracing::info!("Settings reset");
     Ok(())
+}
+
+pub async fn make_scripts_executable(install_path: &Path) -> Result<(), String> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let mut entries = tokio::fs::read_dir(install_path)
+        .await
+        .map_err(|e| format!("Failed to read directory: {e}"))?;
+
+    while let Some(entry) = entries.next_entry().await.map_err(|e| e.to_string())? {
+        let path = entry.path();
+        if path.extension().is_some_and(|ext| ext == "sh") {
+            let metadata = tokio::fs::metadata(&path)
+                .await
+                .map_err(|e| format!("Failed to get metadata: {e}"))?;
+            let mut perms = metadata.permissions();
+            perms.set_mode(perms.mode() | 0o111);
+            tokio::fs::set_permissions(&path, perms)
+                .await
+                .map_err(|e| format!("Failed to set permissions: {e}"))?;
+            tracing::debug!("Made executable: {}", path.display());
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+    use tempfile::tempdir;
+
+    #[tokio::test]
+    async fn test_make_scripts_executable() {
+        let dir = tempdir().unwrap();
+        let script_path = dir.path().join("test.sh");
+        std::fs::write(&script_path, "#!/bin/bash\necho hello").unwrap();
+
+        let meta_before = std::fs::metadata(&script_path).unwrap();
+        assert_eq!(meta_before.permissions().mode() & 0o111, 0);
+
+        make_scripts_executable(dir.path()).await.unwrap();
+
+        let meta_after = std::fs::metadata(&script_path).unwrap();
+        assert_ne!(meta_after.permissions().mode() & 0o111, 0);
+    }
+
+    #[tokio::test]
+    async fn test_make_scripts_executable_ignores_non_sh() {
+        let dir = tempdir().unwrap();
+        let json_path = dir.path().join("config.json");
+        std::fs::write(&json_path, "{}").unwrap();
+
+        let meta_before = std::fs::metadata(&json_path).unwrap();
+        let mode_before = meta_before.permissions().mode();
+
+        make_scripts_executable(dir.path()).await.unwrap();
+
+        let meta_after = std::fs::metadata(&json_path).unwrap();
+        assert_eq!(meta_after.permissions().mode(), mode_before);
+    }
 }
