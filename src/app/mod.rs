@@ -10,6 +10,7 @@ use iced_aw::Wrap;
 
 use crate::icons::Icon;
 use crate::security::validate_web_url;
+use crate::services::is_omarchy_available;
 use crate::tasks;
 use crate::theme::{darken, menu_style, pick_list_style, PickListColors, CARD_WIDTH, RADIUS_MD, SPACING_LG, SPACING_MD, SPACING_SM, SPACING_XS};
 
@@ -509,7 +510,7 @@ impl App {
             self.update_count(),
             &self.theme,
             self.theme_mode,
-            self.omarchy_palette.is_some(),
+            is_omarchy_available(),
         );
         let content = match &self.screen {
             Screen::Browse => self.view_browse(),

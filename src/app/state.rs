@@ -328,6 +328,9 @@ impl App {
 
     pub fn set_theme_mode(&mut self, mode: ThemeMode) {
         self.theme_mode = mode;
+        if mode == ThemeMode::Omarchy && self.omarchy_palette.is_none() {
+            self.omarchy_palette = load_omarchy_palette();
+        }
         self.update_theme();
     }
 
