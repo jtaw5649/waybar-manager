@@ -104,6 +104,21 @@ pub const NOTIFICATION_WIDTH: f32 = 380.0;
 pub const HEADER_HEIGHT: f32 = 56.0;
 pub const NAV_ITEM_HEIGHT: f32 = 42.0;
 
+pub const SEARCH_PANEL_WIDTH: f32 = 320.0;
+pub const FILTER_DROPDOWN_WIDTH: f32 = 250.0;
+pub const PREFERENCES_MODAL_WIDTH: f32 = 500.0;
+pub const PREFERENCES_MODAL_MAX_HEIGHT: f32 = 600.0;
+pub const CONFIRMATION_DIALOG_WIDTH: f32 = 350.0;
+pub const NUMBER_INPUT_WIDTH: f32 = 120.0;
+pub const SKELETON_BAR_SM: f32 = 40.0;
+pub const SKELETON_BAR_MD: f32 = 60.0;
+pub const DESCRIPTION_HEIGHT: f32 = 48.0;
+pub const SCREENSHOT_LOADING_HEIGHT: f32 = 200.0;
+pub const SCREENSHOT_MAX_HEIGHT: f32 = 400.0;
+pub const SCREENSHOT_FAILED_HEIGHT: f32 = 120.0;
+pub const SETTINGS_CONTENT_MAX_WIDTH: f32 = 600.0;
+pub const DETAIL_CONTENT_MAX_WIDTH: f32 = 800.0;
+
 pub const ICON_XS: f32 = 12.0;
 pub const ICON_SM: f32 = 16.0;
 pub const ICON_MD: f32 = 20.0;

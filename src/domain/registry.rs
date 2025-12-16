@@ -24,6 +24,8 @@ pub struct RegistryModule {
     pub rating: Option<f32>,
     #[serde(default)]
     pub verified_author: bool,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 impl RegistryModule {
@@ -32,6 +34,7 @@ impl RegistryModule {
         self.name.to_lowercase().contains(&query_lower)
             || self.description.to_lowercase().contains(&query_lower)
             || self.author.to_lowercase().contains(&query_lower)
+            || self.tags.iter().any(|t| t.to_lowercase().contains(&query_lower))
     }
 
     pub fn formatted_downloads(&self) -> String {
@@ -92,7 +95,8 @@ pub struct RegistryIndex {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CategoryInfo {
-    pub id: String,
+    #[serde(default)]
+    pub id: Option<String>,
     pub name: String,
     pub icon: String,
 }
@@ -148,6 +152,7 @@ mod tests {
             last_updated: None,
             rating: None,
             verified_author: false,
+            tags: Vec::new(),
         }
     }
 
@@ -177,6 +182,49 @@ mod tests {
         fn test_matches_search_no_match() {
             let module = create_test_registry_module("test");
             assert!(!module.matches_search("nonexistent"));
+        }
+
+        #[test]
+        fn test_matches_search_by_tag() {
+            let mut module = create_test_registry_module("test");
+            module.tags = vec!["weather".to_string(), "forecast".to_string()];
+            assert!(module.matches_search("forecast"));
+            assert!(module.matches_search("WEATHER"));
+        }
+
+        #[test]
+        fn test_deserialize_with_tags() {
+            let json = r#"{
+                "uuid": "test@dev",
+                "name": "Test",
+                "description": "A test module",
+                "author": "dev",
+                "category": "system",
+                "icon": null,
+                "screenshot": null,
+                "repo_url": "https://github.com/test/test",
+                "downloads": 100,
+                "tags": ["keyword1", "keyword2"]
+            }"#;
+            let module: RegistryModule = serde_json::from_str(json).unwrap();
+            assert_eq!(module.tags, vec!["keyword1", "keyword2"]);
+        }
+
+        #[test]
+        fn test_deserialize_without_tags_defaults_empty() {
+            let json = r#"{
+                "uuid": "test@dev",
+                "name": "Test",
+                "description": "A test module",
+                "author": "dev",
+                "category": "system",
+                "icon": null,
+                "screenshot": null,
+                "repo_url": "https://github.com/test/test",
+                "downloads": 100
+            }"#;
+            let module: RegistryModule = serde_json::from_str(json).unwrap();
+            assert!(module.tags.is_empty());
         }
 
         #[test]

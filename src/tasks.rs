@@ -445,6 +445,7 @@ fn sample_registry() -> RegistryIndex {
                 last_updated: Some(chrono::Utc::now() - chrono::Duration::days(5)),
                 rating: Some(4.5),
                 verified_author: true,
+                tags: Vec::new(),
             },
             RegistryModule {
                 uuid: ModuleUuid::try_from("cpu-temp@system").unwrap(),
@@ -460,6 +461,7 @@ fn sample_registry() -> RegistryIndex {
                 last_updated: Some(chrono::Utc::now() - chrono::Duration::days(12)),
                 rating: Some(4.2),
                 verified_author: false,
+                tags: Vec::new(),
             },
             RegistryModule {
                 uuid: ModuleUuid::try_from("network-speed@network").unwrap(),
@@ -475,6 +477,7 @@ fn sample_registry() -> RegistryIndex {
                 last_updated: Some(chrono::Utc::now() - chrono::Duration::days(30)),
                 rating: Some(4.8),
                 verified_author: true,
+                tags: Vec::new(),
             },
             RegistryModule {
                 uuid: ModuleUuid::try_from("spotify-player@media").unwrap(),
@@ -490,6 +493,7 @@ fn sample_registry() -> RegistryIndex {
                 last_updated: Some(chrono::Utc::now() - chrono::Duration::days(2)),
                 rating: Some(4.9),
                 verified_author: true,
+                tags: Vec::new(),
             },
             RegistryModule {
                 uuid: ModuleUuid::try_from("battery-status@power").unwrap(),
@@ -505,6 +509,7 @@ fn sample_registry() -> RegistryIndex {
                 last_updated: Some(chrono::Utc::now() - chrono::Duration::days(45)),
                 rating: Some(4.0),
                 verified_author: false,
+                tags: Vec::new(),
             },
             RegistryModule {
                 uuid: ModuleUuid::try_from("disk-usage@storage").unwrap(),
@@ -520,6 +525,7 @@ fn sample_registry() -> RegistryIndex {
                 last_updated: Some(chrono::Utc::now() - chrono::Duration::days(90)),
                 rating: None,
                 verified_author: false,
+                tags: Vec::new(),
             },
         ],
         categories: HashMap::new(),
@@ -528,7 +534,6 @@ fn sample_registry() -> RegistryIndex {
 
 #[cfg(not(debug_assertions))]
 fn sample_registry() -> RegistryIndex {
-    // In release builds, return empty registry - proper error handling should be implemented
     tracing::error!("Registry unavailable and no sample data in release mode");
     RegistryIndex::default()
 }

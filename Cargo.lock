@@ -4937,7 +4937,7 @@ dependencies = [
 
 [[package]]
 name = "waybar-manager"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "chrono",
  "dirs",

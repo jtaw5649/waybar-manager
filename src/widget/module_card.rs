@@ -6,8 +6,8 @@ use crate::app::state::Screen;
 use crate::domain::RegistryModule;
 use crate::icons::Icon;
 use crate::theme::{
-    shadow_md, shadow_hover, AppTheme, FONT_LG, FONT_SM, FONT_XS, ICON_SM, ICON_XS, RADIUS_LG,
-    RADIUS_SM, SPACE_2XS, SPACE_LG, SPACE_MD, SPACE_SM, SPACE_XS,
+    shadow_md, shadow_hover, AppTheme, DESCRIPTION_HEIGHT, FONT_LG, FONT_SM, FONT_XS, ICON_SM,
+    ICON_XS, RADIUS_LG, RADIUS_SM, SPACE_2XS, SPACE_LG, SPACE_MD, SPACE_SM, SPACE_XS,
 };
 
 use super::category_style;
@@ -58,7 +58,7 @@ pub fn module_card(
             .size(FONT_SM)
             .color(theme.text_muted),
     )
-    .height(Length::Fixed(48.0));
+    .height(Length::Fixed(DESCRIPTION_HEIGHT));
 
     let category_badge = container(
         text(category.display_name())

@@ -12,7 +12,7 @@ use crate::icons::Icon;
 use crate::security::validate_web_url;
 use crate::services::is_omarchy_available;
 use crate::tasks;
-use crate::theme::{darken, menu_style, pick_list_style, PickListColors, CARD_WIDTH, RADIUS_MD, SPACING_LG, SPACING_MD, SPACING_SM, SPACING_XS};
+use crate::theme::{darken, menu_style, pick_list_style, PickListColors, CARD_WIDTH, RADIUS_MD, SEARCH_PANEL_WIDTH, SPACING_LG, SPACING_MD, SPACING_SM, SPACING_XS};
 
 use crate::tray::TrayEvent;
 use crate::widget::{confirmation_dialog, empty_state, empty_state_dynamic, empty_state_with_action, module_card, module_detail_screen, module_row, module_table, notification_toast, preferences_modal, settings_screen, sidebar, skeleton_card};
@@ -629,7 +629,7 @@ impl App {
                 .align_y(Alignment::Center),
         )
         .padding([SPACING_XS, SPACING_MD])
-        .width(Length::Fixed(320.0))
+        .width(Length::Fixed(SEARCH_PANEL_WIDTH))
         .style(move |_| iced::widget::container::Style {
             background: Some(iced::Background::Color(surface)),
             border: iced::Border {

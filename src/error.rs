@@ -34,9 +34,6 @@ pub enum ServiceError {
 
     #[error("Config error: {0}")]
     Config(String),
-
-    #[error("Task failed: {0}")]
-    Task(String),
 }
 
 impl ServiceError {
@@ -76,40 +73,6 @@ impl ServiceError {
     pub fn config(message: impl Into<String>) -> Self {
         Self::Config(message.into())
     }
-
-    pub fn task(message: impl Into<String>) -> Self {
-        Self::Task(message.into())
-    }
-}
-
-pub trait IoResultExt<T> {
-    fn with_context(self, context: impl Into<String>) -> Result<T, ServiceError>;
-}
-
-impl<T> IoResultExt<T> for Result<T, std::io::Error> {
-    fn with_context(self, context: impl Into<String>) -> Result<T, ServiceError> {
-        self.map_err(|e| ServiceError::io(context, e))
-    }
-}
-
-pub trait JsonResultExt<T> {
-    fn with_context(self, context: impl Into<String>) -> Result<T, ServiceError>;
-}
-
-impl<T> JsonResultExt<T> for Result<T, serde_json::Error> {
-    fn with_context(self, context: impl Into<String>) -> Result<T, ServiceError> {
-        self.map_err(|e| ServiceError::json_parse(context, e))
-    }
-}
-
-pub trait NetworkResultExt<T> {
-    fn with_context(self, context: impl Into<String>) -> Result<T, ServiceError>;
-}
-
-impl<T> NetworkResultExt<T> for Result<T, reqwest::Error> {
-    fn with_context(self, context: impl Into<String>) -> Result<T, ServiceError> {
-        self.map_err(|e| ServiceError::network(context, e))
-    }
 }
 
 #[cfg(test)]
@@ -146,14 +109,5 @@ mod tests {
     fn test_config_error_display() {
         let err = ServiceError::config("invalid waybar config syntax");
         assert_eq!(err.to_string(), "Config error: invalid waybar config syntax");
-    }
-
-    #[test]
-    fn test_io_result_ext() {
-        let result: Result<(), std::io::Error> =
-            Err(std::io::Error::new(std::io::ErrorKind::PermissionDenied, "access denied"));
-        let converted = result.with_context("writing file");
-        assert!(converted.is_err());
-        assert!(converted.unwrap_err().to_string().contains("writing file"));
     }
 }

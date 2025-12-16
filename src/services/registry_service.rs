@@ -170,6 +170,7 @@ mod tests {
             last_updated: None,
             rating: None,
             verified_author: false,
+            tags: Vec::new(),
         }
     }
 

@@ -5,7 +5,8 @@ use crate::app::message::Message;
 use crate::icons::Icon;
 use crate::theme::{
     button as btn_style, checkbox as chk_style, container as cont_style, AppTheme, FONT_2XL,
-    FONT_LG, FONT_MD, FONT_SM, FONT_XS, ICON_SM, SPACE_LG, SPACE_MD, SPACE_SM, SPACE_XL, SPACE_XS,
+    FONT_LG, FONT_MD, FONT_SM, FONT_XS, ICON_SM, SETTINGS_CONTENT_MAX_WIDTH, SPACE_LG, SPACE_MD,
+    SPACE_SM, SPACE_XL, SPACE_XS,
 };
 
 const GITHUB_URL: &str = "https://github.com/jtaw5649/waybar-manager";
@@ -125,7 +126,7 @@ pub fn settings_screen(theme: &AppTheme, tray_enabled: bool) -> Element<'_, Mess
     let content = column![header, appearance_section, data_section, about_section]
         .spacing(SPACE_XL)
         .padding(SPACE_XL)
-        .max_width(600.0);
+        .max_width(SETTINGS_CONTENT_MAX_WIDTH);
 
     scrollable(
         container(content)
