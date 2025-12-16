@@ -19,7 +19,7 @@ static DEFAULT_VERSION: Lazy<ModuleVersion> = Lazy::new(|| {
         unreachable!("1.0.0 is always valid semver")
     })
 });
-use crate::security::validate_extraction_path;
+use crate::security::{parse_github_url_safe, validate_extraction_path};
 use crate::services::paths::{self, HTTP_CLIENT, REGISTRY_URL};
 
 pub fn initial_load() -> Task<Message> {
@@ -218,22 +218,7 @@ fn parse_github_url(repo_url: &str) -> Result<(String, String), String> {
     let url = repo_url
         .trim_end_matches('/')
         .trim_end_matches(".git");
-
-    let parts: Vec<&str> = url.split('/').collect();
-    let len = parts.len();
-
-    if len < 2 {
-        return Err(format!("Invalid GitHub URL: {repo_url}"));
-    }
-
-    let owner = parts[len - 2].to_string();
-    let repo = parts[len - 1].to_string();
-
-    if owner.is_empty() || repo.is_empty() {
-        return Err(format!("Could not extract owner/repo from: {repo_url}"));
-    }
-
-    Ok((owner, repo))
+    parse_github_url_safe(url).map_err(|e| e.to_string())
 }
 
 async fn download_module_files(repo_url: &str, install_path: &Path) -> Result<(), String> {
