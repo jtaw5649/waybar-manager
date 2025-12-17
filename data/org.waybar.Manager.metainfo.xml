@@ -56,14 +56,23 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.2.2" date="2025-12-17">
+      <description>
+        <p>Documentation and installation improvements</p>
+        <ul>
+          <li>Add pre-built binary installer via cargo-dist</li>
+          <li>Add Flatpak local build instructions</li>
+          <li>Improve README documentation</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1" date="2025-01-01">
       <description>
-        <p>Initial stable release</p>
+        <p>Bug fixes and stability improvements</p>
         <ul>
-          <li>Browse and search waybar modules from the registry</li>
-          <li>Install, enable, disable, and uninstall modules</li>
-          <li>Configure module preferences</li>
-          <li>Automatic waybar config and CSS merging</li>
+          <li>Fix panic in preferences modal</li>
+          <li>Fix uninstall not cleaning CSS and config</li>
+          <li>Fix module update preserving enabled state</li>
         </ul>
       </description>
     </release>
