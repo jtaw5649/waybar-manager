@@ -4,7 +4,7 @@ use std::time::Duration;
 use once_cell::sync::Lazy;
 use reqwest::Client;
 
-pub const REGISTRY_URL: &str = "https://jtaw5649.github.io/waybar-modules-registry/index.json";
+pub const REGISTRY_URL: &str = "https://waybar-registry-api.jtaw.workers.dev/api/v1/index";
 
 pub static HTTP_CLIENT: Lazy<Client> = Lazy::new(|| {
     Client::builder()
