@@ -1,23 +1,22 @@
-<p align="center">
-  <img src="assets/icons/hicolor/scalable/apps/org.waybar.ExtensionManager.svg" width="128" height="128" alt="Waybar Extension Manager">
-</p>
 <h1 align="center">Waybar Manager</h1>
 
 <p align="center">
-  <b>An iced module manager for Waybar — browse, install, and manage modules from a central registry.</b>
+  <b>Browse, install, and manage waybar modules from a central registry.</b>
 </p>
 
 <p align="center">
   <a href="#installation">Installation</a> •
   <a href="#features">Features</a> •
   <a href="#module-format">Module Format</a> •
-  <a href="#development">Development</a>
+  <a href="#development">Development</a> •
+  <a href="#contributing">Contributing</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Rust-1.75%2B-orange?style=flat-square&logo=rust" alt="Rust">
+  <img src="https://img.shields.io/badge/Rust-1.85%2B-orange?style=flat-square&logo=rust" alt="Rust">
   <img src="https://img.shields.io/badge/iced-0.14-blue?style=flat-square" alt="iced">
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square" alt="License">
+  <img src="https://img.shields.io/github/v/release/jtaw5649/waybar-manager?style=flat-square" alt="Release">
 </p>
 
 ---
@@ -38,6 +37,12 @@
 
 ## Installation
 
+### Arch Linux (AUR)
+
+```bash
+yay -S waybar-manager
+```
+
 ### Build from Source
 
 ```bash
@@ -51,7 +56,10 @@ cargo build --release
 
 ```bash
 # Arch Linux
-sudo pacman -S rust
+sudo pacman -S rust dbus
+
+# Debian/Ubuntu
+sudo apt install rustc cargo libdbus-1-dev pkg-config
 
 # Other platforms: Install Rust via rustup
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -86,17 +94,22 @@ weather-wttr@waybar-modules/
 
 ## Registry
 
-The module registry is hosted on GitHub Pages:
+The module registry is hosted on Cloudflare Workers:
 
-| URL | Purpose |
-|-----|---------|
-| `https://waybar-modules.github.io/registry/index.json` | Module listings |
-| `https://waybar-modules.github.io/registry/schemas/` | JSON Schema validation |
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/v1/index` | Full registry index |
+| `GET /api/v1/modules` | List all modules |
+| `GET /api/v1/modules/:uuid` | Get single module |
+| `GET /api/v1/modules/search?q=` | Search modules |
+| `GET /api/v1/categories` | List categories |
+
+Base URL: `https://waybar-registry-api.jtaw.workers.dev`
 
 ### Submitting a Module
 
-1. Create your module repo with required files
-3. Submit a PR to the registry repo
+1. Create your module repo with required files (see Module Format above)
+2. Submit a PR to [waybar-modules-registry](https://github.com/jtaw5649/waybar-modules-registry)
 
 ## Development
 
@@ -130,6 +143,14 @@ cargo clippy
     ├── theme/               # Custom theming (colors, styles)
     └── widget/              # Reusable UI components (sidebar, cards, rows)
 ```
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+GPL-3.0-or-later. See [LICENSE](LICENSE) for details.
 
 ## Credits
 
