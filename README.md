@@ -37,10 +37,23 @@
 
 ## Installation
 
+### Pre-built Binary (Recommended)
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/jtaw5649/waybar-manager/releases/latest/download/waybar-manager-bin-installer.sh | sh
+```
+
 ### Arch Linux (AUR)
 
 ```bash
 yay -S waybar-manager
+```
+
+### Flatpak (Local Build)
+
+```bash
+flatpak-builder --user --install --force-clean build flatpak/org.waybar.Manager.yml
+flatpak run org.waybar.Manager
 ```
 
 ### Build from Source
@@ -52,7 +65,7 @@ cargo build --release
 ./target/release/waybar-manager-bin
 ```
 
-### Dependencies
+### Dependencies (Build from Source)
 
 ```bash
 # Arch Linux
