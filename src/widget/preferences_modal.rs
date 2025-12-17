@@ -2,6 +2,7 @@ use iced::widget::{button, checkbox, column, container, pick_list, row, scrollab
 use iced::{Alignment, Background, Border, Element, Length};
 
 use crate::app::message::Message;
+use crate::domain::ModuleUuid;
 use crate::services::{ModulePreferences, PreferenceField, PreferenceValue, PreferencesSchema, SelectOption};
 use crate::theme::{
     button as btn_style, menu_style, pick_list_style, AppTheme, PickListColors, FONT_LG, FONT_MD,
@@ -42,18 +43,18 @@ pub fn preferences_modal<'a>(
     .align_y(Alignment::Center)
     .width(Length::Fill);
 
+    let uuid_module = ModuleUuid::try_from(uuid).expect("preferences modal called with invalid uuid");
+
     let fields: Vec<Element<Message>> = schema
         .fields
         .iter()
-        .map(|field| render_field(field, current_values, uuid, theme))
+        .map(|field| render_field(field, current_values, &uuid_module, theme))
         .collect();
 
     let fields_column = column(fields).spacing(SPACE_MD).width(Length::Fill);
-
-    let uuid_owned = uuid.to_string();
     let footer = row![
         button(text("Reset to Defaults").size(FONT_SM))
-            .on_press(Message::ResetPreferences(uuid_owned.clone()))
+            .on_press(Message::ResetPreferences(uuid_module.clone()))
             .style(btn_style::secondary(*theme))
             .padding([SPACE_SM, SPACE_MD]),
         Space::new().width(Length::Fill),
@@ -105,11 +106,11 @@ pub fn preferences_modal<'a>(
 fn render_field<'a>(
     field: &'a PreferenceField,
     values: &'a ModulePreferences,
-    uuid: &str,
+    uuid: &ModuleUuid,
     theme: &'a AppTheme,
 ) -> Element<'a, Message> {
     let theme_copy = *theme;
-    let uuid_owned = uuid.to_string();
+    let uuid_owned = uuid.clone();
 
     match field {
         PreferenceField::Text {

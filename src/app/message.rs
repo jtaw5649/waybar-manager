@@ -1,7 +1,7 @@
 use iced::widget::image;
 
 use crate::app::state::{CategoryFilter, ConfirmationAction, NotificationKind, Screen, SortField, ViewMode};
-use crate::domain::{BarSection, InstalledModule, RegistryIndex};
+use crate::domain::{BarSection, InstalledModule, ModuleUuid, RegistryIndex};
 use crate::services::PreferenceValue;
 use crate::theme::ThemeMode;
 
@@ -15,16 +15,16 @@ pub enum Message {
     ToggleSortOrder,
     SetViewMode(ViewMode),
     ToggleVerifiedOnly,
-    ModuleClicked(String),
-    InstallModule(String),
+    ModuleClicked(ModuleUuid),
+    InstallModule(ModuleUuid),
 
-    ToggleModule { uuid: String, enabled: bool },
-    SetModulePosition { uuid: String, section: BarSection },
+    ToggleModule { uuid: ModuleUuid, enabled: bool },
+    SetModulePosition { uuid: ModuleUuid, section: BarSection },
     PositionChanged(Result<String, String>),
-    UninstallModule(String),
-    UpdateModule(String),
+    UninstallModule(ModuleUuid),
+    UpdateModule(ModuleUuid),
     UpdateAllModules,
-    OpenPreferences(String),
+    OpenPreferences(ModuleUuid),
 
     InstalledSearchChanged(String),
     ClearInstalledSearch,
@@ -65,9 +65,9 @@ pub enum Message {
     FocusSearch,
     EscapePressed,
 
-    PreferenceChanged(String, String, PreferenceValue),
+    PreferenceChanged(ModuleUuid, String, PreferenceValue),
     ClosePreferences,
-    ResetPreferences(String),
+    ResetPreferences(ModuleUuid),
 
     TrayShowWindow,
     TrayCheckUpdates,
