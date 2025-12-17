@@ -6,9 +6,12 @@ resolver = "2"
 name = "waybar-manager"
 version = "0.1.0"
 edition = "2024"
-description = "Waybar Extension Manager - browse, install, and configure waybar modules"
+description = "Waybar Manager - browse, install, and manage waybar modules"
 license = "GPL-3.0-or-later"
 authors = ["jtaw"]
+repository = "https://github.com/jtaw5649/waybar-manager"
+homepage = "https://github.com/jtaw5649/waybar-manager"
+readme = "README.md"
 
 [[bin]]
 name = "waybar-manager-bin"
@@ -59,3 +62,8 @@ tempfile = "3"
 lto = true
 codegen-units = 1
 strip = true
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

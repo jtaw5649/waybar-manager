@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.waybar.Manager</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Waybar Manager</name>
+  <summary>Browse, install, and manage waybar modules</summary>
+  <description>
+    <p>
+      Waybar Manager is a graphical application for discovering, installing,
+      and managing custom modules for Waybar, the highly customizable status bar
+      for Wayland compositors.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Browse a curated registry of waybar modules</li>
+      <li>One-click installation of modules with automatic config merging</li>
+      <li>Enable, disable, and uninstall modules easily</li>
+      <li>Configure module preferences through a friendly interface</li>
+      <li>Dark theme optimized for desktop integration</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">org.waybar.Manager.desktop</launchable>
+  <url type="homepage">https://github.com/jtaw5649/waybar-manager</url>
+  <url type="bugtracker">https://github.com/jtaw5649/waybar-manager/issues</url>
+  <url type="vcs-browser">https://github.com/jtaw5649/waybar-manager</url>
+  <developer id="io.github.jtaw5649">
+    <name>jtaw</name>
+  </developer>
+  <provides>
+    <binary>waybar-manager-bin</binary>
+  </provides>
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+  <recommends>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </recommends>
+  <categories>
+    <category>Utility</category>
+    <category>Settings</category>
+  </categories>
+  <keywords>
+    <keyword>waybar</keyword>
+    <keyword>modules</keyword>
+    <keyword>status bar</keyword>
+    <keyword>wayland</keyword>
+    <keyword>customization</keyword>
+  </keywords>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main browse view showing available modules</caption>
+      <image>https://raw.githubusercontent.com/jtaw5649/waybar-manager/master/screenshots/browse.png</image>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="1.0.0" date="2025-01-01">
+      <description>
+        <p>Initial stable release</p>
+        <ul>
+          <li>Browse and search waybar modules from the registry</li>
+          <li>Install, enable, disable, and uninstall modules</li>
+          <li>Configure module preferences</li>
+          <li>Automatic waybar config and CSS merging</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>
