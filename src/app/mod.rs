@@ -464,9 +464,10 @@ impl App {
             }
 
             Message::PreferenceChanged(uuid, key, value) => {
-                if self.preferences.open_for.as_ref() == Some(&uuid) {
+                let uuid_str = uuid.to_string();
+                if self.preferences.open_for.as_ref() == Some(&uuid_str) {
                     self.preferences.values.insert(key, value);
-                    if let Err(e) = crate::services::save_preferences(&uuid, &self.preferences.values) {
+                    if let Err(e) = crate::services::save_preferences(&uuid_str, &self.preferences.values) {
                         tracing::warn!("Failed to save preferences: {e}");
                         self.push_notification(
                             "Failed to save preferences".to_string(),
@@ -485,10 +486,11 @@ impl App {
             }
 
             Message::ResetPreferences(uuid) => {
+                let uuid_str = uuid.to_string();
                 if let Some(schema) = &self.preferences.schema {
                     let defaults = crate::services::preferences::get_default_preferences(schema);
                     self.preferences.values = defaults.clone();
-                    match crate::services::save_preferences(&uuid, &defaults) {
+                    match crate::services::save_preferences(&uuid_str, &defaults) {
                         Ok(()) => {
                             self.push_notification(
                                 "Preferences reset to defaults".to_string(),

@@ -15,7 +15,7 @@ pub enum Message {
     ToggleSortOrder,
     SetViewMode(ViewMode),
     ToggleVerifiedOnly,
-    ModuleClicked(String),
+    ModuleClicked(ModuleUuid),
     InstallModule(ModuleUuid),
 
     ToggleModule { uuid: ModuleUuid, enabled: bool },
@@ -65,9 +65,9 @@ pub enum Message {
     FocusSearch,
     EscapePressed,
 
-    PreferenceChanged(String, String, PreferenceValue),
+    PreferenceChanged(ModuleUuid, String, PreferenceValue),
     ClosePreferences,
-    ResetPreferences(String),
+    ResetPreferences(ModuleUuid),
 
     TrayShowWindow,
     TrayCheckUpdates,
