@@ -148,7 +148,49 @@ async fn update_module_async(
     repo_url: String,
     new_version: ModuleVersion,
 ) -> Result<InstalledModule, String> {
+    use crate::services::waybar_config;
+
     let install_path = paths::module_install_path(&uuid);
+    let state_path = paths::data_dir().join("installed.json");
+
+    let content = tokio::fs::read_to_string(&state_path)
+        .await
+        .map_err(|e| format!("Failed to read state: {e}"))?;
+
+    let mut modules: Vec<InstalledModule> =
+        serde_json::from_str(&content).map_err(|e| format!("Failed to parse state: {e}"))?;
+
+    let module = modules
+        .iter()
+        .find(|m| m.uuid.to_string() == uuid)
+        .ok_or_else(|| format!("Module not found: {uuid}"))?;
+
+    let was_enabled = module.enabled;
+    let waybar_module_name = module.waybar_module_name.clone();
+    let section = module
+        .position
+        .as_ref()
+        .map(|p| p.section)
+        .unwrap_or(BarSection::Center);
+
+    if was_enabled {
+        handle_css_removal(&uuid).await;
+
+        if let Ok(waybar_content) = waybar_config::load_config().await {
+            let without_config =
+                waybar_config::remove_module_config(&waybar_content, &waybar_module_name)
+                    .unwrap_or_else(|e| {
+                        tracing::warn!("Failed to remove module config during update: {e}");
+                        waybar_content.clone()
+                    });
+
+            if let Ok(new_waybar_content) =
+                waybar_config::remove_module(&without_config, &waybar_module_name)
+            {
+                let _ = waybar_config::save_config(&new_waybar_content).await;
+            }
+        }
+    }
 
     if install_path.exists() {
         tokio::fs::remove_dir_all(&install_path)
@@ -163,14 +205,6 @@ async fn update_module_async(
     download_module_files(&repo_url, &install_path).await?;
 
     let has_preferences = install_path.join("preferences.schema.json").exists();
-
-    let state_path = paths::data_dir().join("installed.json");
-    let content = tokio::fs::read_to_string(&state_path)
-        .await
-        .map_err(|e| format!("Failed to read state: {e}"))?;
-
-    let mut modules: Vec<InstalledModule> =
-        serde_json::from_str(&content).map_err(|e| format!("Failed to parse state: {e}"))?;
 
     let module = modules
         .iter_mut()
@@ -189,6 +223,44 @@ async fn update_module_async(
     tokio::fs::write(&state_path, new_content)
         .await
         .map_err(|e| format!("Failed to save state: {e}"))?;
+
+    if was_enabled {
+        if let Ok(waybar_content) = waybar_config::load_config().await {
+            let config_path = install_path.join("config.jsonc");
+            let with_module_config = if config_path.exists() {
+                if let Ok(module_config) = tokio::fs::read_to_string(&config_path).await {
+                    let prefs = crate::services::preferences::load_preferences(&uuid);
+                    let module_config = waybar_config::substitute_preferences(&module_config, &prefs);
+                    let install_path_str = install_path.to_string_lossy();
+                    waybar_config::merge_module_config(&waybar_content, &module_config, &install_path_str)
+                        .unwrap_or_else(|e| {
+                            tracing::warn!("Failed to merge module config during update: {e}");
+                            waybar_content.clone()
+                        })
+                } else {
+                    waybar_content.clone()
+                }
+            } else {
+                waybar_content.clone()
+            };
+
+            if let Ok(with_module) =
+                waybar_config::add_module(&with_module_config, &waybar_module_name, section)
+            {
+                if let Err(e) = waybar_config::backup_config().await {
+                    tracing::warn!("Failed to backup waybar config: {e}");
+                }
+
+                if waybar_config::save_config(&with_module).await.is_ok()
+                    && let Err(e) = waybar_config::reload_waybar().await
+                {
+                    tracing::warn!("Failed to reload waybar: {e}");
+                }
+            }
+        }
+
+        handle_css_injection(&uuid, &install_path).await;
+    }
 
     tracing::info!("Updated module: {}", uuid);
     Ok(updated)
@@ -745,36 +817,69 @@ async fn change_module_position_async(
     Ok(uuid)
 }
 
-async fn uninstall_module_async(uuid: String) -> Result<String, String> {
+async fn uninstall_module_async(uuid: String) -> Result<String, (String, String)> {
+    use crate::services::waybar_config;
+
     let state_path = paths::data_dir().join("installed.json");
     let install_path = paths::module_install_path(&uuid);
 
-    let remove_dir = async {
-        match tokio::fs::remove_dir_all(&install_path).await {
-            Ok(()) => Ok(()),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(e) => Err(format!("Failed to remove module files: {e}")),
-        }
-    };
-
-    let read_state = tokio::fs::read_to_string(&state_path);
-
-    let (remove_result, read_result) = tokio::join!(remove_dir, read_state);
-
-    remove_result?;
-    let content = read_result.map_err(|e| format!("Failed to read state: {e}"))?;
+    let content = tokio::fs::read_to_string(&state_path)
+        .await
+        .map_err(|e| (uuid.clone(), format!("Failed to read state: {e}")))?;
 
     let mut modules: Vec<InstalledModule> =
-        serde_json::from_str(&content).map_err(|e| format!("Failed to parse state: {e}"))?;
+        serde_json::from_str(&content).map_err(|e| (uuid.clone(), format!("Failed to parse state: {e}")))?;
+
+    let module = modules
+        .iter()
+        .find(|m| m.uuid.to_string() == uuid)
+        .ok_or_else(|| (uuid.clone(), format!("Module not found: {uuid}")))?;
+
+    let was_enabled = module.enabled;
+    let waybar_module_name = module.waybar_module_name.clone();
+
+    if was_enabled {
+        if let Ok(waybar_content) = waybar_config::load_config().await {
+            let without_config =
+                waybar_config::remove_module_config(&waybar_content, &waybar_module_name)
+                    .unwrap_or_else(|e| {
+                        tracing::warn!("Failed to remove module config: {e}");
+                        waybar_content.clone()
+                    });
+
+            let without_module =
+                waybar_config::remove_module(&without_config, &waybar_module_name);
+
+            if let Ok(new_waybar_content) = without_module {
+                if let Err(e) = waybar_config::backup_config().await {
+                    tracing::warn!("Failed to backup waybar config: {e}");
+                }
+
+                if waybar_config::save_config(&new_waybar_content).await.is_ok()
+                    && let Err(e) = waybar_config::reload_waybar().await
+                {
+                    tracing::warn!("Failed to reload waybar: {e}");
+                }
+            }
+        }
+
+        handle_css_removal(&uuid).await;
+    }
+
+    match tokio::fs::remove_dir_all(&install_path).await {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err((uuid, format!("Failed to remove module files: {e}"))),
+    }
 
     modules.retain(|m| m.uuid.to_string() != uuid);
 
     let new_content =
-        serde_json::to_string_pretty(&modules).map_err(|e| format!("Failed to serialize: {e}"))?;
+        serde_json::to_string_pretty(&modules).map_err(|e| (uuid.clone(), format!("Failed to serialize: {e}")))?;
 
     tokio::fs::write(&state_path, new_content)
         .await
-        .map_err(|e| format!("Failed to save state: {e}"))?;
+        .map_err(|e| (uuid.clone(), format!("Failed to save state: {e}")))?;
 
     tracing::info!("Uninstalled module {}", uuid);
     Ok(uuid)

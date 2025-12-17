@@ -35,7 +35,7 @@ pub enum Message {
     InstalledLoaded(Result<Vec<InstalledModule>, String>),
     InstallCompleted(Result<InstalledModule, String>),
     ToggleCompleted(Result<String, (String, String)>),
-    UninstallCompleted(Result<String, String>),
+    UninstallCompleted(Result<String, (String, String)>),
     UpdateCompleted(Result<InstalledModule, String>),
     UpdateAllCompleted(Result<usize, String>),
 
