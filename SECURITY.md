@@ -4,7 +4,8 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.2.x   | :white_check_mark: |
+| 0.3.x   | :white_check_mark: |
+| 0.2.x   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -20,20 +21,38 @@ If you discover a security vulnerability in Waybar Manager, please report it res
 
 We will acknowledge receipt within 48 hours and provide a timeline for a fix.
 
-## Security Considerations
+## Security Features (v0.3.0+)
 
-### Module Installation
-- Modules are downloaded from GitHub repositories
-- Users should review module source code before installation
-- Waybar Manager merges module configs into your waybar configuration
-- Scripts included in modules are made executable and run by waybar
+### Landlock Sandbox
+Install scripts run in a Landlock LSM sandbox with:
+- Restricted filesystem access (read-only system paths, write to /tmp only)
+- Network isolation (configurable per module)
+- Process isolation
 
-### Network Security
-- All API communication uses HTTPS
-- Registry API is hosted on Cloudflare Workers
-- No authentication data is stored locally
+### Signature Verification
+Modules from the registry are cryptographically signed:
+- Ed25519 signatures via Minisign
+- Signature verified before package extraction
+- Compile-time embedded public key
 
-### Local Data
-- Configuration files are stored in `~/.config/waybar/`
-- Module data is stored in `~/.local/share/waybar-manager/`
-- Cache is stored in `~/.cache/waybar-manager/`
+### Revocation Checking
+- Modules can be revoked if security issues are discovered
+- Fail-closed by default (network errors abort installation)
+- Checked before download begins
+
+### Archive Extraction Protection
+- Algebraic path normalization (prevents TOCTOU attacks)
+- Path traversal attempts rejected
+- Symlinks and hardlinks rejected
+- 50MB size limit on packages
+
+### Dependency Validation
+- Binary dependencies checked via `which`
+- Python module dependencies validated safely
+- Injection-safe validation (no shell execution)
+
+## Local Data
+
+- Configuration files: `~/.config/waybar/`
+- Module data: `~/.local/share/waybar-manager/`
+- Cache: `~/.cache/waybar-manager/`

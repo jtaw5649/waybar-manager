@@ -105,21 +105,7 @@ weather-wttr@waybar-modules/
 }
 ```
 
-## Registry
-
-The module registry is hosted on Cloudflare Workers:
-
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /api/v1/index` | Full registry index |
-| `GET /api/v1/modules` | List all modules |
-| `GET /api/v1/modules/:uuid` | Get single module |
-| `GET /api/v1/modules/search?q=` | Search modules |
-| `GET /api/v1/categories` | List categories |
-
-Base URL: `https://waybar-registry-api.jtaw.workers.dev`
-
-### Submitting a Module
+## Submitting a Module
 
 1. Create your module repo with required files (see Module Format above)
 2. Submit a PR to [waybar-modules-registry](https://github.com/jtaw5649/waybar-modules-registry)

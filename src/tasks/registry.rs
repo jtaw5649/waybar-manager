@@ -22,7 +22,7 @@ async fn fetch_registry_async() -> Result<RegistryIndex, String> {
         return Ok(index);
     }
 
-    tracing::info!("Fetching registry from {}", REGISTRY_URL);
+    tracing::info!("Fetching registry");
     let response = HTTP_CLIENT
         .get(REGISTRY_URL)
         .send()
@@ -55,7 +55,7 @@ async fn refresh_registry_async() -> Result<RegistryIndex, String> {
         tracing::debug!("Cache file removal skipped: {e}");
     }
 
-    tracing::info!("Force refreshing registry from {}", REGISTRY_URL);
+    tracing::info!("Force refreshing registry");
     let response = HTTP_CLIENT
         .get(REGISTRY_URL)
         .send()

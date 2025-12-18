@@ -1,6 +1,5 @@
+use crate::services::paths::SECURITY_CHECK_URL;
 use thiserror::Error;
-
-const SECURITY_CHECK_URL: &str = "https://waybar-registry-api.jtaw.workers.dev/security/check";
 
 #[derive(Debug, Error)]
 pub enum RevocationError {
