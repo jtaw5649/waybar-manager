@@ -65,7 +65,7 @@ landlock = "0.4"
 minisign-verify = "0.2"
 sha2 = "0.10"
 which = "8.0"
-sigstore = { version = "0.10", optional = true }
+sigstore = { version = "0.13", optional = true }
 
 # System tray (D-Bus StatusNotifierItem)
 ksni = { version = "0.3.2", features = ["blocking"] }
