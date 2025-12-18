@@ -4,7 +4,7 @@ use wiremock::{matchers::method, matchers::path, Mock, MockServer, ResponseTempl
 
 pub struct TestContext {
     pub mock_server: MockServer,
-    pub temp_dir: TempDir,
+    pub _temp_dir: TempDir,
     pub data_dir: PathBuf,
     pub cache_dir: PathBuf,
     pub config_dir: PathBuf,
@@ -13,11 +13,11 @@ pub struct TestContext {
 impl TestContext {
     pub async fn new() -> Self {
         let mock_server = MockServer::start().await;
-        let temp_dir = TempDir::new().expect("failed to create temp dir");
+        let _temp_dir = TempDir::new().expect("failed to create temp dir");
 
-        let data_dir = temp_dir.path().join("data");
-        let cache_dir = temp_dir.path().join("cache");
-        let config_dir = temp_dir.path().join("config");
+        let data_dir = _temp_dir.path().join("data");
+        let cache_dir = _temp_dir.path().join("cache");
+        let config_dir = _temp_dir.path().join("config");
 
         std::fs::create_dir_all(&data_dir).expect("failed to create data dir");
         std::fs::create_dir_all(&cache_dir).expect("failed to create cache dir");
@@ -25,7 +25,7 @@ impl TestContext {
 
         Self {
             mock_server,
-            temp_dir,
+            _temp_dir,
             data_dir,
             cache_dir,
             config_dir,
@@ -34,18 +34,6 @@ impl TestContext {
 
     pub fn registry_url(&self) -> String {
         format!("{}/api/v1/index", self.mock_server.uri())
-    }
-
-    pub fn modules_dir(&self) -> PathBuf {
-        self.data_dir.join("modules")
-    }
-
-    pub fn installed_json_path(&self) -> PathBuf {
-        self.data_dir.join("installed.json")
-    }
-
-    pub fn registry_cache_path(&self) -> PathBuf {
-        self.cache_dir.join("registry.json")
     }
 }
 

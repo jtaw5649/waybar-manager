@@ -1,4 +1,4 @@
-use waybar_manager::app::state::{App, LoadingState, Screen};
+use waybar_manager::app::state::{LoadingState, Screen};
 use waybar_manager::testing::{
     test_app, test_app_with_installed, test_app_with_registry, InstalledModuleBuilder,
     RegistryModuleBuilder,

@@ -161,6 +161,26 @@ impl App {
             Message::TrayCheckUpdates => handlers::handle_tray_check_updates(self),
 
             Message::TrayQuit => handlers::handle_tray_quit(),
+
+            Message::InstallProgress { uuid, stage } => {
+                handlers::handle_install_progress(self, uuid, stage)
+            }
+
+            Message::DependencyCheckCompleted(result) => {
+                handlers::handle_dependency_check_completed(self, result)
+            }
+
+            Message::RevocationCheckCompleted(result) => {
+                handlers::handle_revocation_check_completed(self, result)
+            }
+
+            Message::SignatureVerified(result) => {
+                handlers::handle_signature_verified(self, result)
+            }
+
+            Message::SandboxStatusChanged(status) => {
+                handlers::handle_sandbox_status_changed(self, status)
+            }
         }
     }
 

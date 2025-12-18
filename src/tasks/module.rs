@@ -10,6 +10,7 @@ use crate::app::Message;
 use crate::domain::{BarSection, InstalledModule, ModuleVersion};
 use crate::security::{parse_github_url_safe, validate_extraction_path};
 use crate::services::paths::{self, HTTP_CLIENT};
+use crate::services::{InstallParams, SecureInstaller};
 
 use super::waybar::{handle_css_injection, handle_css_removal};
 
@@ -53,9 +54,10 @@ pub fn install_module(
     name: String,
     version: Option<ModuleVersion>,
     repo_url: String,
+    checksum: Option<String>,
 ) -> Task<Message> {
     Task::perform(
-        install_module_async(uuid, name, version, repo_url),
+        install_module_async(uuid, name, version, repo_url, checksum),
         Message::InstallCompleted,
     )
 }
@@ -65,20 +67,23 @@ async fn install_module_async(
     name: String,
     version: Option<ModuleVersion>,
     repo_url: String,
+    checksum: Option<String>,
 ) -> Result<InstalledModule, String> {
     let install_path = paths::module_install_path(&uuid);
-
-    tokio::fs::create_dir_all(&install_path)
-        .await
-        .map_err(|e| format!("Failed to create install directory: {e}"))?;
-
-    download_module_files(&repo_url, &install_path).await?;
-    make_scripts_executable(&install_path).await?;
-
-    let has_preferences = install_path.join("preferences.schema.json").exists();
-
     let version = version.unwrap_or_else(|| DEFAULT_VERSION.clone());
 
+    if let Some(expected_hash) = checksum {
+        install_secure(&uuid, &version.to_string(), &expected_hash, &install_path).await?;
+    } else {
+        tokio::fs::create_dir_all(&install_path)
+            .await
+            .map_err(|e| format!("Failed to create install directory: {e}"))?;
+
+        download_module_files(&repo_url, &install_path).await?;
+        make_scripts_executable(&install_path).await?;
+    }
+
+    let has_preferences = install_path.join("preferences.schema.json").exists();
     let waybar_module_name = format!("custom/{}", name.replace(' ', "-").to_lowercase());
 
     let installed = InstalledModule {
@@ -122,6 +127,54 @@ async fn install_module_async(
 
     tracing::info!("Installed module: {}", uuid);
     Ok(installed)
+}
+
+async fn install_secure(
+    uuid: &str,
+    version: &str,
+    expected_hash: &str,
+    dest_dir: &Path,
+) -> Result<(), String> {
+    let package_url = paths::package_url(uuid, version);
+    let signature_url = paths::signature_url(uuid, version);
+
+    tracing::info!("Fetching signature from {}", signature_url);
+    let signature = HTTP_CLIENT
+        .get(&signature_url)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to fetch signature: {e}"))?
+        .text()
+        .await
+        .map_err(|e| format!("Failed to read signature: {e}"))?;
+
+    tracing::info!("Downloading package from {}", package_url);
+    let package_data = HTTP_CLIENT
+        .get(&package_url)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to download package: {e}"))?
+        .bytes()
+        .await
+        .map_err(|e| format!("Failed to read package: {e}"))?;
+
+    let installer = SecureInstaller::new();
+    let params = InstallParams {
+        uuid,
+        version,
+        package_data: &package_data,
+        signature: &signature,
+        expected_hash,
+        dest_dir,
+    };
+    installer
+        .install(params, |stage| {
+            tracing::debug!("Install stage: {}", stage.description());
+        })
+        .await
+        .map_err(|e| format!("Secure installation failed: {e}"))?;
+
+    Ok(())
 }
 
 async fn update_module_async(

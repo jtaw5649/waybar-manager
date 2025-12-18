@@ -151,6 +151,7 @@ impl RegistryModuleBuilder {
             rating: None,
             verified_author: false,
             tags: self.tags,
+            checksum: None,
         }
     }
 }
@@ -195,6 +196,7 @@ pub fn test_app() -> App {
         last_spinner_update: Instant::now(),
         tray_enabled: false,
         tray_receiver: None,
+        sandbox_status: None,
     }
 }
 

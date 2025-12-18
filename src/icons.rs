@@ -11,6 +11,7 @@ const SEARCH_SVG: &[u8] = include_bytes!("../assets/icons/ui/search.svg");
 const DOWNLOAD_SVG: &[u8] = include_bytes!("../assets/icons/ui/download.svg");
 const CHECK_SVG: &[u8] = include_bytes!("../assets/icons/ui/check.svg");
 const ERROR_SVG: &[u8] = include_bytes!("../assets/icons/ui/error.svg");
+const WARNING_SVG: &[u8] = include_bytes!("../assets/icons/ui/warning.svg");
 const INFO_SVG: &[u8] = include_bytes!("../assets/icons/ui/info.svg");
 const APP_LOGO_SVG: &[u8] = include_bytes!("../assets/icons/ui/app-logo.svg");
 const SUN_SVG: &[u8] = include_bytes!("../assets/icons/ui/sun.svg");
@@ -36,6 +37,7 @@ pub enum Icon {
     Download,
     Check,
     Error,
+    Warning,
     Info,
     AppLogo,
     Sun,
@@ -60,6 +62,7 @@ impl Icon {
             Icon::Download => Some(DOWNLOAD_SVG),
             Icon::Check => Some(CHECK_SVG),
             Icon::Error => Some(ERROR_SVG),
+            Icon::Warning => Some(WARNING_SVG),
             Icon::Info => Some(INFO_SVG),
             Icon::AppLogo => Some(APP_LOGO_SVG),
             Icon::Sun => Some(SUN_SVG),

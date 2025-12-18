@@ -26,6 +26,8 @@ pub struct RegistryModule {
     pub verified_author: bool,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub checksum: Option<String>,
 }
 
 impl RegistryModule {
@@ -122,6 +124,7 @@ mod tests {
             rating: None,
             verified_author: false,
             tags: Vec::new(),
+            checksum: None,
         }
     }
 

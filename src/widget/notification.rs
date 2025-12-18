@@ -11,6 +11,7 @@ use crate::theme::{
 pub fn notification_toast(notif: &Notification, theme: &AppTheme) -> Element<'static, Message> {
     let (icon, icon_color) = match notif.kind {
         NotificationKind::Success => (Icon::Check, theme.text_normal),
+        NotificationKind::Warning => (Icon::Warning, theme.text_normal),
         NotificationKind::Error => (Icon::Error, theme.text_normal),
         NotificationKind::Info => (Icon::Info, theme.info),
     };
@@ -54,6 +55,7 @@ pub fn notification_toast(notif: &Notification, theme: &AppTheme) -> Element<'st
 
     let (bg_color, border_color, border_width) = match notif.kind {
         NotificationKind::Success => (theme.success, theme.success, 0.0),
+        NotificationKind::Warning => (theme.warning, theme.warning, 0.0),
         NotificationKind::Error => (theme.danger, theme.danger, 0.0),
         NotificationKind::Info => (theme.bg_floating, theme.info, 1.0),
     };

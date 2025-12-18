@@ -24,6 +24,7 @@ pub fn handle_install_module(app: &mut App, uuid: crate::domain::ModuleUuid) -> 
             module.name.clone(),
             module.version.clone(),
             module.repo_url.clone(),
+            module.checksum.clone(),
         );
     }
 
