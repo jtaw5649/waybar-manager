@@ -137,9 +137,9 @@ mod tests {
 
         #[test]
         fn parses_valid_string() {
-            let uuid = ModuleUuid::try_from("weather-wttr@waybar-modules").unwrap();
+            let uuid = ModuleUuid::try_from("weather-wttr@barforge").unwrap();
             assert_eq!(uuid.name(), "weather-wttr");
-            assert_eq!(uuid.namespace(), "waybar-modules");
+            assert_eq!(uuid.namespace(), "barforge");
         }
 
         #[test]

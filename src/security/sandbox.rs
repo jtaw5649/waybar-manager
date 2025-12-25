@@ -105,10 +105,8 @@ pub fn apply(config: &SandboxConfig) -> SandboxResult {
         .unwrap_or_else(|| PathBuf::from(shellexpand::tilde("~/.config/waybar").to_string()));
 
     let cache_dir = dirs::cache_dir()
-        .map(|p| p.join("waybar-manager"))
-        .unwrap_or_else(|| {
-            PathBuf::from(shellexpand::tilde("~/.cache/waybar-manager").to_string())
-        });
+        .map(|p| p.join("barforge"))
+        .unwrap_or_else(|| PathBuf::from(shellexpand::tilde("~/.cache/barforge").to_string()));
 
     let _ = std::fs::create_dir_all(&waybar_config);
     let _ = std::fs::create_dir_all(&cache_dir);

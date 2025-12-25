@@ -529,6 +529,61 @@ dependencies = [
 ]
 
 [[package]]
+name = "barforge"
+version = "0.4.0"
+dependencies = [
+ "anyhow",
+ "barforge-registry-types",
+ "chrono",
+ "clap",
+ "criterion",
+ "dirs",
+ "flate2",
+ "futures-util",
+ "iced",
+ "iced_aw",
+ "jsonc-parser",
+ "ksni",
+ "landlock",
+ "minisign-verify",
+ "notify",
+ "once_cell",
+ "open",
+ "regex",
+ "reqwest",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
+ "shellexpand",
+ "sigstore",
+ "tar",
+ "tempfile",
+ "thiserror 2.0.17",
+ "tokio",
+ "tokio-test",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "urlencoding",
+ "which",
+ "wiremock",
+]
+
+[[package]]
+name = "barforge-registry-types"
+version = "0.2.0"
+dependencies = [
+ "chrono",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "ts-rs",
+]
+
+[[package]]
 name = "base16ct"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7422,61 +7477,6 @@ dependencies = [
  "pin-utils",
  "slab",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "waybar-manager"
-version = "0.4.0"
-dependencies = [
- "anyhow",
- "chrono",
- "clap",
- "criterion",
- "dirs",
- "flate2",
- "futures-util",
- "iced",
- "iced_aw",
- "jsonc-parser",
- "ksni",
- "landlock",
- "minisign-verify",
- "notify",
- "once_cell",
- "open",
- "regex",
- "reqwest",
- "semver",
- "serde",
- "serde_json",
- "sha2",
- "shellexpand",
- "sigstore",
- "tar",
- "tempfile",
- "thiserror 2.0.17",
- "tokio",
- "tokio-test",
- "toml",
- "tracing",
- "tracing-subscriber",
- "url",
- "urlencoding",
- "waybar-registry-types",
- "which",
- "wiremock",
-]
-
-[[package]]
-name = "waybar-registry-types"
-version = "0.2.0"
-dependencies = [
- "chrono",
- "semver",
- "serde",
- "serde_json",
- "thiserror 2.0.17",
- "ts-rs",
 ]
 
 [[package]]
