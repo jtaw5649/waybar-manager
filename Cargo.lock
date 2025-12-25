@@ -530,7 +530,7 @@ dependencies = [
 
 [[package]]
 name = "barforge"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "anyhow",
  "barforge-registry-types",
