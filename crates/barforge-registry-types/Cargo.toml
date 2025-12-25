@@ -1,8 +1,8 @@
 [package]
-name = "waybar-registry-types"
+name = "barforge-registry-types"
 version = "0.2.0"
 edition = "2024"
-description = "Shared types for waybar-manager and waybar-registry-api"
+description = "Shared types for Barforge app and registry API"
 license = "GPL-3.0-or-later"
 authors = ["jtaw"]
 

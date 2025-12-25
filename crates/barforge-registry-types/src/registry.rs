@@ -314,7 +314,7 @@ mod tests {
             let json = r#"{
                 "version": 1,
                 "modules": [{
-                    "uuid": "weather-wttr@waybar-modules",
+                    "uuid": "weather-wttr@barforge",
                     "name": "Weather WTTR",
                     "description": "Weather display using wttr.in",
                     "author": "johndoe",
